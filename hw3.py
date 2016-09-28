@@ -2,13 +2,12 @@ import numpy as np
 
 
 def split4(arr):
-    a1, a2 = np.hsplit(arr, 2)
-    return np.vsplit(a1, 2) + np.vsplit(a2, 2)
+    arr_left, arr_right = np.hsplit(arr, 2)
+    return np.vsplit(arr_left, 2) + np.vsplit(arr_right, 2)
 
 
 def mult(a, b):
-    n = np.shape(a)[0]
-    if n == 1:
+    if np.shape(a)[0] == 1:
         return a * b
     a11, a21, a12, a22 = split4(a)
     b11, b21, b12, b22 = split4(b)
@@ -30,16 +29,18 @@ n = int(input())
 near2 = 1
 while near2 < n:
     near2 = near2 * 2
-aplus0 = bplus0 = np.zeros((near2, near2), int)
+aplus0 = np.zeros((near2, near2), int)
+bplus0 = np.zeros((near2, near2), int)
+
 a = []
 b = []
 for i in range(n):
     a.append(list(map(int, input().split())))
 for i in range(n):
     b.append(list(map(int, input().split())))
-aplus0[:n, :n] = np.array(a)
-bplus0[:n, :n] = np.array(b)
+aplus0[:n, :n] = a
+bplus0[:n, :n] = b
 c = mult(aplus0, bplus0)
 
-for i in c[:n,:n]:
-    print(*i)
+for row in c[:n, :n]:
+    print(*row)
