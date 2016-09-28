@@ -26,21 +26,16 @@ def mult(a, b):
     return np.vstack((np.hstack((c11, c12)),
                       np.hstack((c21, c22))))
 n = int(input())
-near2 = 1
-while near2 < n:
-    near2 = near2 * 2
-aplus0 = np.zeros((near2, near2), int)
-bplus0 = np.zeros((near2, near2), int)
-
-a = []
-b = []
+n_extended = 1
+while n_extended < n:
+    n_extended = n_extended * 2
+a = np.zeros((n_extended, n_extended), int)
+b = np.zeros((n_extended, n_extended), int)
 for i in range(n):
-    a.append(list(map(int, input().split())))
+    a[i, :n] = list(map(int, input().split()))
 for i in range(n):
-    b.append(list(map(int, input().split())))
-aplus0[:n, :n] = a
-bplus0[:n, :n] = b
-c = mult(aplus0, bplus0)
+    b[i, :n] = list(map(int, input().split()))
+c = mult(a, b)
 
 for row in c[:n, :n]:
     print(*row)
