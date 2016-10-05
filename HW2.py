@@ -1,5 +1,7 @@
+import sys
 import os
 import hashlib
+import collections
 
 
 def md5(path):
@@ -8,18 +10,14 @@ def md5(path):
         digest.update(f.read())
     return digest.hexdigest()
 
-startpath = input()
-d = {}
-for path in os.walk(startpath):
-    for file in path[2]:
-        file_path = path[0] + '\\' + file
-        if file[0] != '.' and file[0] != '~':
+hash_dict = collections.defaultdict(list)
+for path, _, files in os.walk(sys.argv[1]):
+    for file in files:
+        file_path = os.path.join(path, file)
+        if not file.startswith(('.', '~')) and not os.path.islink(file_path):
             hash_file = md5(file_path)
-            if d.get(hash_file):
-                d[hash_file].extend([file])
-            else:
-                d[hash_file] = [file]
+            hash_dict[hash_file].append(file_path)
 
-for key in d:
-    if len(d[key]) > 1:
-        print(*d[key], sep=':')
+for value in hash_dict.values():
+    if len(value) > 1:
+        print(*value, sep=':')
