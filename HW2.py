@@ -10,14 +10,13 @@ def md5(path):
         digest.update(f.read())
     return digest.hexdigest()
 
-hash_to_file = collections.defaultdict(list)
-for path, _, files in os.walk(sys.argv[1]):
+hash_to_files = collections.defaultdict(list)
+for path, _, files in os.walk(os.path.abspath(sys.argv[1])):
     for file in files:
-        file_path = os.path.join(path, file)
-        if not file.startswith(('.', '~')) and not os.path.islink(file_path):
-            hash_file = md5(file_path)
-            hash_to_file[hash_file].append(file_path)
+        path_to_file = os.path.join(path, file)
+        if not file.startswith(('.', '~')) and not os.path.islink(path_to_file):
+            hash_to_files[md5(path_to_file)].append(path_to_file)
 
-for value in hash_to_file.values():
-    if len(value) > 1:
-        print(*value, sep=':')
+for equal_files in hash_to_files.values():
+    if len(equal_files) > 1:
+        print(*equal_files, sep=':')
