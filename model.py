@@ -2,17 +2,17 @@ class Scope:
 
     def __init__(self, parent=None):
         self.parent = parent
-        scope_dictanory = {}
-        self.scope_dictanory = scope_dictanory
+        scope_dictionary = {}
+        self.scope_dictionary = scope_dictionary
 
     def __getitem__(self, name):
-        if self.scope_dictanory.get(name):
-            return self.scope_dictanory[name]
+        if self.scope_dictionary.get(name):
+            return self.scope_dictionary[name]
         else:
             return self.parent[name]
 
     def __setitem__(self, name, val):
-        self.scope_dictanory[name] = val
+        self.scope_dictionary[name] = val
 
 
 class Number:
@@ -96,7 +96,7 @@ class FunctionCall:
         function = self.fun_expr.evaluate(scope)
         call_scope = Scope(scope)
         for i in range(len(self.args)):
-            call_scope[function.args[i]] = self.args[i]
+            call_scope[function.args[i]] = self.args[i].evaluate(call_scope)
         return function.evaluate(call_scope)
 
 
@@ -117,8 +117,8 @@ class BinaryOperation:
         self.rhs = rhs
 
     def evaluate(self, scope):
-        left = self.lhs.evaluate(scope).evaluate(scope).value
-        right = self.rhs.evaluate(scope).evaluate(scope).value
+        left = self.lhs.evaluate(scope).value
+        right = self.rhs.evaluate(scope).value
         op = self.op
         if op == "+":
             return Number(left+right)
@@ -131,45 +131,21 @@ class BinaryOperation:
         if op == "%":
             return Number(left % right)
         if op == "==":
-            if left == right:
-                return Number(1)
-            else:
-                return Number(0)
+            return Number(int(left == right))
         if op == "!=":
-            if left != right:
-                return Number(1)
-            else:
-                return Number(0)
+            return Number(int(left != right))
         if op == "<":
-            if left < right:
-                return Number(1)
-            else:
-                return Number(0)
+            return Number(int(left < right))
         if op == ">":
-            if left > right:
-                return Number(1)
-            else:
-                return Number(0)
+            return Number(int(left > right))
         if op == ">=":
-            if left >= right:
-                return Number(1)
-            else:
-                return Number(0)
+            return Number(int(left >= right))
         if op == "<=":
-            if left <= right:
-                return Number(1)
-            else:
-                return Number(0)
+            return Number(int(left <= right))
         if op == "&&":
-            if left != 0 and right != 0:
-                return Number(1)
-            else:
-                return Number(0)
+            return Number(int(left and right))
         if op == "||":
-            if left == 0 and right == 0:
-                return Number(0)
-            else:
-                return Number(1)
+            return Number(int(left or right))
 
 
 class UnaryOperation:
@@ -178,7 +154,7 @@ class UnaryOperation:
         self.expr = expr
 
     def evaluate(self, scope):
-        val = self.expr.evaluate(scope).evaluate(scope).value
+        val = self.expr.evaluate(scope).value
         if self.op == "!":
             if val:
                 return Number(0)
@@ -207,40 +183,63 @@ def example():
 def my_tests():
     parent = Scope()
     parent["sign"] = Function(('a'),
-            [Conditional(BinaryOperation(Reference('a'), '>=', Number(0)),
-                    [Print(Number(1))], [Print(Number(-1))])])
-    parent["obr"] = Function(('a', 'b'),
-        [Conditional(BinaryOperation
-            (Reference('a'), '==', UnaryOperation('-', Reference('b'))),
-                    [Number(1)], [Number(0)])])
-    FunctionDefinition("srednee_arifm",
-            Function(('a', 'b'),
-                [BinaryOperation(
-                    BinaryOperation(Reference('a'), '+', Reference('b')),
-                            '/', Number(2))])).evaluate(parent)
+                              [Conditional(BinaryOperation(Reference('a'),
+                                                           '>=', Number(0)),
+                                           [Number(1)], [Number(-1)])])
+    parent["opposite"] = Function(('a', 'b'),
+                                  [Conditional(BinaryOperation(Reference('a'),
+                                                               '==',
+                                                               UnaryOperation('-',
+                                                                              Reference('b'))),
+                                               [Number(1)], [Number(0)])])
+    FunctionDefinition("average",
+                       Function(('a', 'b'),
+                                [BinaryOperation(BinaryOperation(Reference('a'),
+                                                                 '+',
+                                                                 Reference('b')),
+                                                 '/',
+                                                 Number(2))])).evaluate(parent)
     FunctionDefinition("max",
-            Function(('a', 'b'),
-                [Conditional
-                    (BinaryOperation(Reference('a'), '>=', Reference('b')),
-                        [Reference('a')],
-                            [Reference('b')])])).evaluate(parent)
+                       Function(('a', 'b'),
+                                [Conditional(BinaryOperation(Reference('a'),
+                                                             '>=',
+                                                             Reference('b')),
+                                             [Reference('a')],
+                                             [Reference('b')])])).evaluate(parent)
+
+    FunctionDefinition("factorial",
+                       Function(('a'),
+                                [Conditional(BinaryOperation(Reference('a'),
+                                                             '<=',
+                                                             Number(1)),
+                                             [Reference('a')],
+                                             [BinaryOperation(FunctionCall(Reference("factorial"),
+                                                           [BinaryOperation(Reference('a'),
+                                                                            '-',
+                                                                            Number(1))]),
+                                              "*",
+                                              Reference('a'))])])).evaluate(parent)
 
     print('Должно вывести знак: ', end=' ')
-    FunctionCall(Reference("sign"), [Read("n")]).evaluate(parent)
+    Print(FunctionCall(Reference("sign"), [Read("n")])).evaluate(parent)
     print('Должно вывести 1, если элементы обратные: ', end=' ')
-    Print(FunctionCall(Reference("obr"),
-        [Read('x'), Read('y')])).evaluate(parent)
+    Print(FunctionCall(Reference("opposite"),
+                       [Read('x'), Read('y')])).evaluate(parent)
     print('Должно вывести среднее арифметическое: ', end=' ')
-    Print(FunctionCall(Reference("srednee_arifm"),
-        [Read('x'), Read('y')])).evaluate(parent)
-    print('Должно вывести максимум: ', end=' ')
+    Print(FunctionCall(Reference("average"),
+          [Read('x'), Read('y')])).evaluate(parent)
+    print('Должно вывести максимум из двух чисел: ', end=' ')
     Read("x").evaluate(parent)
     Read("y").evaluate(parent)
     Print(FunctionCall(Reference("max"), [Reference('x'),
-        Reference('y')])).evaluate(parent)
+                                          Reference('y')])).evaluate(parent)
     print('Должно вывести знак среднего арифметического: ', end=' ')
     Print(FunctionCall(Reference("sign"), [FunctionCall(
-        Reference("srednee_arifm"), [Read("t"), Read("p")])])).evaluate(parent)
+        Reference("average"), [Read("t"), Read("p")])])).evaluate(parent)
+    print('Должно вывести факториал числа: ', end=' ')
+    Read("x").evaluate(parent)
+    Print(FunctionCall(Reference("factorial"), [
+        Reference("x")])).evaluate(parent)
 
 if __name__ == '__main__':
     example()
