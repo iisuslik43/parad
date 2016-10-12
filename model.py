@@ -231,10 +231,16 @@ def my_tests():
                    [BO(R('a'), '-', N(1))]),
                 '+', FC(R('fib'),
                         [BO(R('a'), '-', N(2))]))])])).evaluate(parent)
+    FD('strange_max',
+       F(('a', 'b'),
+         [C(BO(R('a'), '<=', R('b')),
+            [R('b')], [FC(R('strange_max'),
+                          [R('b'), R('a')])])])).evaluate(parent)
 
+    print('Должно вывести максимум из 2 чисел: ', end=' ')
+    P(FC(R("strange_max"), [Read("n"), Read("k")])).evaluate(parent)
     print('Должно вывести число Фибоначчи данного номера: ', end=' ')
-    Read("n").evaluate(parent)
-    P(FC(R("fib"), [R("n")])).evaluate(parent)
+    P(FC(R("fib"), [Read("n")])).evaluate(parent)
     print('Должно вывести знак: ', end=' ')
     P(FC(R("sign"), [Read("n")])).evaluate(parent)
     print('Должно вывести 1, если элементы обратные: ', end=' ')
