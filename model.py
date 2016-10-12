@@ -2,17 +2,16 @@ class Scope:
 
     def __init__(self, parent=None):
         self.parent = parent
-        scope_dictionary = {}
-        self.scope_dictionary = scope_dictionary
+        self.scope_dict = {}
 
     def __getitem__(self, name):
-        if self.scope_dictionary.get(name):
-            return self.scope_dictionary[name]
+        if name in self.scope_dict:
+            return self.scope_dict[name]
         else:
             return self.parent[name]
 
     def __setitem__(self, name, val):
-        self.scope_dictionary[name] = val
+        self.scope_dict[name] = val
 
 
 class Number:
@@ -31,9 +30,12 @@ class Function:
         self.body = body
 
     def evaluate(self, scope):
-        for obj in self.body:
-            ev_result = obj.evaluate(scope)
-        return ev_result
+        if self.body:
+            for obj in self.body:
+                ev_result = obj.evaluate(scope)
+            return ev_result
+        else:
+            return None
 
 
 class FunctionDefinition:
@@ -55,13 +57,19 @@ class Conditional:
 
     def evaluate(self, scope):
         if self.condtion.evaluate(scope).value == 0:
-            for obj in self.if_false:
-                ev_result = obj.evaluate(scope)
-            return ev_result
+            if self.if_false:
+                for obj in self.if_false:
+                    ev_result = obj.evaluate(scope)
+                return ev_result
+            else:
+                return None
         else:
-            for obj in self.if_true:
-                ev_result = obj.evaluate(scope)
-            return ev_result
+            if self.if_true:
+                for obj in self.if_true:
+                    ev_result = obj.evaluate(scope)
+                return ev_result
+            else:
+                return None
 
 
 class Print:
@@ -71,7 +79,7 @@ class Print:
 
     def evaluate(self, scope):
         Number = self.expr.evaluate(scope)
-        print(Number.evaluate(scope).value)
+        print(int(Number.evaluate(scope).value))
         return Number
 
 
@@ -95,8 +103,8 @@ class FunctionCall:
     def evaluate(self, scope):
         function = self.fun_expr.evaluate(scope)
         call_scope = Scope(scope)
-        for i in range(len(self.args)):
-            call_scope[function.args[i]] = self.args[i].evaluate(call_scope)
+        for f, s in zip(function.args, self.args):
+            call_scope[f] = s.evaluate(scope)
         return function.evaluate(call_scope)
 
 
@@ -156,10 +164,7 @@ class UnaryOperation:
     def evaluate(self, scope):
         val = self.expr.evaluate(scope).value
         if self.op == "!":
-            if val:
-                return Number(0)
-            else:
-                return Number(1)
+            return Number(int(not val))
         if self.op == "-":
             return Number(-val)
 
@@ -181,53 +186,81 @@ def example():
 
 
 def my_tests():
+    F = Function
+    FD = FunctionDefinition
+    FC = FunctionCall
+    BO = BinaryOperation
+    R = Reference
+    C = Conditional
+    N = Number
+    UO = UnaryOperation
+    P = Print
     parent = Scope()
-    parent["sign"] = Function(('a'),
-                              [Conditional(BinaryOperation(Reference('a'),
-                                                           '>=', Number(0)),
-                                           [Number(1)], [Number(-1)])])
-    parent["opposite"] = Function(('a', 'b'),
-                                  [Conditional(BinaryOperation(Reference('a'),
-                                                               '==',
-                                                               UnaryOperation('-',
-                                                                              Reference('b'))),
-                                               [Number(1)], [Number(0)])])
-    FunctionDefinition("average",
-                       Function(('a', 'b'),
-                                [BinaryOperation(BinaryOperation(Reference('a'),
-                                                                 '+',
-                                                                 Reference('b')),
-                                                 '/',
-                                                 Number(2))])).evaluate(parent)
-    FunctionDefinition("max",
-                       Function(('a', 'b'),
-                                [Conditional(BinaryOperation(Reference('a'),
-                                                             '>=',
-                                                             Reference('b')),
-                                             [Reference('a')],
-                                             [Reference('b')])])).evaluate(parent)
+    parent["sign"] = F(('a'),
+                       [C(BO(R('a'),
+                             '>=', N(0)),
+                          [N(1)], [N(-1)])])
+    parent["opposite"] = F(('a', 'b'),
+                           [C(BO(R('a'),
+                                '==',
+                                UO('-',
+                                   R('b'))),
+                             [N(1)], [N(0)])])
+    FD("average",
+       F(('a', 'b'),
+         [BO(BO(R('a'),
+                '+',
+                R('b')),
+            '/',
+            N(2))])).evaluate(parent)
+    FD("max",
+       F(('a', 'b'),
+         [Conditional(BO(R('a'),
+                      '>=',
+                      R('b')),
+          [R('a')],
+          [R('b')])])).evaluate(parent)
 
-    FunctionDefinition("factorial",
-                       Function(('a'),
-                                [Conditional(BinaryOperation(Reference('a'),
-                                                             '<=',
-                                                             Number(1)),
-                                             [Reference('a')],
-                                             [BinaryOperation(FunctionCall(Reference("factorial"),
-                                                           [BinaryOperation(Reference('a'),
-                                                                            '-',
-                                                                            Number(1))]),
-                                              "*",
-                                              Reference('a'))])])).evaluate(parent)
+    FD("factorial",
+       F(('a'),
+         [C(BO(R('a'),
+               '<=',
+               Number(1)),
+            [R('a')],
+            [BO(FC(R("factorial"),
+                   [BO(R('a'),
+                       '-',
+                       N(1))]),
+                "*",
+                R('a'))])])).evaluate(parent)
+
+    FD("fib",
+       F(('a'),
+         [C(BO(R('a'),
+               '<=',
+               N(1)),
+            [N(1)],
+            [BO(FC(R('fib'),
+                   [BO(R('a'),
+                       '-',
+                       N(1))]),
+                '+',
+                FC(R('fib'),
+                   [BO(R('a'),
+                       '-',
+                       N(2))]))])]))
+
+    Read("n").evaluate(parent)
+    P(FC(R("fib"), [R("n")])).evaluate(parent)
 
     print('Должно вывести знак: ', end=' ')
-    Print(FunctionCall(Reference("sign"), [Read("n")])).evaluate(parent)
+    P(FC(R("sign"), [Read("n")])).evaluate(parent)
     print('Должно вывести 1, если элементы обратные: ', end=' ')
-    Print(FunctionCall(Reference("opposite"),
-                       [Read('x'), Read('y')])).evaluate(parent)
+    P(FC(R("opposite"),
+         [Read('x'), Read('y')])).evaluate(parent)
     print('Должно вывести среднее арифметическое: ', end=' ')
-    Print(FunctionCall(Reference("average"),
-          [Read('x'), Read('y')])).evaluate(parent)
+    P(FC(R("average"),
+         [Read('x'), Read('y')])).evaluate(parent)
     print('Должно вывести максимум из двух чисел: ', end=' ')
     Read("x").evaluate(parent)
     Read("y").evaluate(parent)
