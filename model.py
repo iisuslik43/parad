@@ -6,6 +6,7 @@ def if_result(if_torf, scope):
     else:
         return None
 
+
 class Scope:
 
     def __init__(self, parent=None):
