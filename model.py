@@ -1,3 +1,11 @@
+def if_result(if_torf, scope):
+    if if_torf:
+        for obj in if_torf:
+            ev_result = obj.evaluate(scope)
+        return ev_result
+    else:
+        return None
+
 class Scope:
 
     def __init__(self, parent=None):
@@ -57,19 +65,9 @@ class Conditional:
 
     def evaluate(self, scope):
         if self.condtion.evaluate(scope).value == 0:
-            if self.if_false:
-                for obj in self.if_false:
-                    ev_result = obj.evaluate(scope)
-                return ev_result
-            else:
-                return None
+            return if_result(self.if_false, scope)
         else:
-            if self.if_true:
-                for obj in self.if_true:
-                    ev_result = obj.evaluate(scope)
-                return ev_result
-            else:
-                return None
+            return if_result(self.if_true, scope)
 
 
 class Print:
@@ -78,9 +76,9 @@ class Print:
         self.expr = expr
 
     def evaluate(self, scope):
-        Number = self.expr.evaluate(scope)
-        print(int(Number.evaluate(scope).value))
-        return Number
+        number = self.expr.evaluate(scope)
+        print(int(number.evaluate(scope).value))
+        return number
 
 
 class Read:
@@ -103,8 +101,8 @@ class FunctionCall:
     def evaluate(self, scope):
         function = self.fun_expr.evaluate(scope)
         call_scope = Scope(scope)
-        for f, s in zip(function.args, self.args):
-            call_scope[f] = s.evaluate(scope)
+        for f_obj, self_obj in zip(function.args, self.args):
+            call_scope[f_obj] = self_obj.evaluate(scope)
         return function.evaluate(call_scope)
 
 
@@ -129,13 +127,13 @@ class BinaryOperation:
         right = self.rhs.evaluate(scope).value
         op = self.op
         if op == "+":
-            return Number(left+right)
+            return Number(left + right)
         if op == "-":
-            return Number(left-right)
+            return Number(left - right)
         if op == "*":
-            return Number(left*right)
+            return Number(left * right)
         if op == "/":
-            return Number(left/right)
+            return Number(left // right)
         if op == "%":
             return Number(left % right)
         if op == "==":
@@ -197,43 +195,45 @@ def my_tests():
     P = Print
     parent = Scope()
     parent["sign"] = F(('a'),
-                       [C(BO(R('a'),
-                             '>=', N(0)),
+                       [C(BO(R('a'), '>=', N(0)),
                           [N(1)], [N(-1)])])
     parent["opposite"] = F(('a', 'b'),
-                           [C(BO(R('a'),
-                                '==',
-                                UO('-',
-                                   R('b'))),
-                             [N(1)], [N(0)])])
+                           [C(BO(R('a'), '==', UO('-', R('b'))),
+                              [N(1)], [N(0)])])
     FD("average",
        F(('a', 'b'),
-         [BO(BO(R('a'),
-                '+',
-                R('b')),
-            '/',
-            N(2))])).evaluate(parent)
+         [BO(BO(R('a'), '+', R('b')),
+             '/', N(2))])).evaluate(parent)
     FD("max",
        F(('a', 'b'),
-         [Conditional(BO(R('a'),
-                      '>=',
-                      R('b')),
+         [Conditional(BO(R('a'), '>=', R('b')),
           [R('a')],
           [R('b')])])).evaluate(parent)
 
     FD("factorial",
        F(('a'),
-         [C(BO(R('a'),
-               '<=',
-               Number(1)),
+         [C(BO(R('a'), '<=', Number(1)),
             [R('a')],
             [BO(FC(R("factorial"),
-                   [BO(R('a'),
-                       '-',
-                       N(1))]),
-                "*",
-                R('a'))])])).evaluate(parent)
+                   [BO(R('a'), '-', N(1))]),
+                "*", R('a'))])])).evaluate(parent)
+    FD("ne_del_na_3",
+       F(('a'),
+         [C(BO(BO(R('a'), "%", N(3)), '==', N(0)),
+            [], [Print(N(1))])])).evaluate(parent)
+    FD("nothing", F(('a'), [])).evaluate(parent)
+    FD("fib",
+       F(('a'),
+         [C(BO(R('a'), '<=', N(1)),
+            [R('a')],
+            [BO(FC(R('fib'),
+                   [BO(R('a'), '-', N(1))]),
+                '+', FC(R('fib'),
+                        [BO(R('a'), '-', N(2))]))])])).evaluate(parent)
 
+    print('Должно вывести число Фибоначчи данного номера: ', end=' ')
+    Read("n").evaluate(parent)
+    P(FC(R("fib"), [R("n")])).evaluate(parent)
     print('Должно вывести знак: ', end=' ')
     P(FC(R("sign"), [Read("n")])).evaluate(parent)
     print('Должно вывести 1, если элементы обратные: ', end=' ')
@@ -248,12 +248,18 @@ def my_tests():
     Print(FunctionCall(Reference("max"), [Reference('x'),
                                           Reference('y')])).evaluate(parent)
     print('Должно вывести знак среднего арифметического: ', end=' ')
-    Print(FunctionCall(Reference("sign"), [FunctionCall(
-        Reference("average"), [Read("t"), Read("p")])])).evaluate(parent)
+    Print(FunctionCall(Reference("sign"),
+                       [FunctionCall(Reference("average"),
+                                     [Read("t"),
+                                      Read("p")])])).evaluate(parent)
     print('Должно вывести факториал числа: ', end=' ')
     Read("x").evaluate(parent)
     Print(FunctionCall(Reference("factorial"), [
-        Reference("x")])).evaluate(parent)
+                       Reference("x")])).evaluate(parent)
+    print('Должно вывести 1,если не делится на 3, и ничего иначе: ', end=' ')
+    FC(R("ne_del_na_3"), [Read("x")]).evaluate(parent)
+    print('Должно выполнить пустую функцию и не сломаться:) ', end=' ')
+    FC(R('nothing'), [N(43)]).evaluate(parent)
 
 if __name__ == '__main__':
     example()
