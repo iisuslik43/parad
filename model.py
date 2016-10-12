@@ -234,25 +234,6 @@ def my_tests():
                 "*",
                 R('a'))])])).evaluate(parent)
 
-    FD("fib",
-       F(('a'),
-         [C(BO(R('a'),
-               '<=',
-               N(1)),
-            [N(1)],
-            [BO(FC(R('fib'),
-                   [BO(R('a'),
-                       '-',
-                       N(1))]),
-                '+',
-                FC(R('fib'),
-                   [BO(R('a'),
-                       '-',
-                       N(2))]))])]))
-
-    Read("n").evaluate(parent)
-    P(FC(R("fib"), [R("n")])).evaluate(parent)
-
     print('Должно вывести знак: ', end=' ')
     P(FC(R("sign"), [Read("n")])).evaluate(parent)
     print('Должно вывести 1, если элементы обратные: ', end=' ')
