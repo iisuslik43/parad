@@ -122,31 +122,31 @@ class BinaryOperation:
         left = self.lhs.evaluate(scope).value
         right = self.rhs.evaluate(scope).value
         op = self.op
-        if op == "+":
+        if op == '+':
             return Number(left + right)
-        if op == "-":
+        if op == '-':
             return Number(left - right)
-        if op == "*":
+        if op == '*':
             return Number(left * right)
-        if op == "/":
+        if op == '/':
             return Number(left // right)
-        if op == "%":
+        if op == '%':
             return Number(left % right)
-        if op == "==":
+        if op == '==':
             return Number(int(left == right))
-        if op == "!=":
+        if op == '!=':
             return Number(int(left != right))
-        if op == "<":
+        if op == '<':
             return Number(int(left < right))
-        if op == ">":
+        if op == '>':
             return Number(int(left > right))
-        if op == ">=":
+        if op == '>=':
             return Number(int(left >= right))
-        if op == "<=":
+        if op == '<=':
             return Number(int(left <= right))
-        if op == "&&":
+        if op == '&&':
             return Number(int(left and right))
-        if op == "||":
+        if op == '||':
             return Number(int(left or right))
 
 
@@ -157,23 +157,23 @@ class UnaryOperation:
 
     def evaluate(self, scope):
         val = self.expr.evaluate(scope).value
-        if self.op == "!":
+        if self.op == '!':
             return Number(int(not val))
-        if self.op == "-":
+        if self.op == '-':
             return Number(-val)
 
 
 def example():
     parent = Scope()
-    parent["foo"] = Function(('hello', 'world'),
+    parent['foo'] = Function(('hello', 'world'),
                              [Print(BinaryOperation(Reference('hello'),
                                                     '+',
                                                     Reference('world')))])
-    parent["bar"] = Number(10)
+    parent['bar'] = Number(10)
     scope = Scope(parent)
-    assert 10 == scope["bar"].value
-    scope["bar"] = Number(20)
-    assert scope["bar"].value == 20
+    assert 10 == scope['bar'].value
+    scope['bar'] = Number(20)
+    assert scope['bar'].value == 20
     print('It should print 2: ', end=' ')
     FunctionCall(FunctionDefinition('foo', parent['foo']),
                  [Number(5), UnaryOperation('-', Number(3))]).evaluate(scope)
@@ -190,35 +190,35 @@ def my_tests():
     UO = UnaryOperation
     P = Print
     parent = Scope()
-    parent["sign"] = F(('a'),
+    parent['sign'] = F(('a'),
                        [C(BO(R('a'), '>=', N(0)),
                           [N(1)], [N(-1)])])
-    parent["opposite"] = F(('a', 'b'),
+    parent['opposite'] = F(('a', 'b'),
                            [C(BO(R('a'), '==', UO('-', R('b'))),
                               [N(1)], [N(0)])])
-    FD("average",
+    FD('average',
        F(('a', 'b'),
          [BO(BO(R('a'), '+', R('b')),
              '/', N(2))])).evaluate(parent)
-    FD("max",
+    FD('max',
        F(('a', 'b'),
          [Conditional(BO(R('a'), '>=', R('b')),
           [R('a')],
           [R('b')])])).evaluate(parent)
 
-    FD("factorial",
+    FD('factorial',
        F(('a'),
          [C(BO(R('a'), '<=', Number(1)),
             [R('a')],
-            [BO(FC(R("factorial"),
+            [BO(FC(R('factorial'),
                    [BO(R('a'), '-', N(1))]),
-                "*", R('a'))])])).evaluate(parent)
-    FD("ne_del_na_3",
+                '*', R('a'))])])).evaluate(parent)
+    FD('ne_del_na_3',
        F(('a'),
-         [C(BO(BO(R('a'), "%", N(3)), '==', N(0)),
+         [C(BO(BO(R('a'), '%', N(3)), '==', N(0)),
             [], [Print(N(1))])])).evaluate(parent)
-    FD("nothing", F(('a'), [])).evaluate(parent)
-    FD("fib",
+    FD('nothing', F(('a'), [])).evaluate(parent)
+    FD('fib',
        F(('a'),
          [C(BO(R('a'), '<=', N(1)),
             [R('a')],
@@ -235,43 +235,43 @@ def my_tests():
     print('Тест выведет бред, если ввести 6 5 на неисправленной программе:')
     print('(Выведет 5, а не 6)')
     print('Должно вывести максимум из 2 чисел: ', end=' ')
-    P(FC(R("strange_max"), [Read("n"), Read("k")])).evaluate(parent)
+    P(FC(R('strange_max'), [Read('n'), Read('k')])).evaluate(parent)
 
     print('Должно вывести число Фибоначчи данного номера: ', end=' ')
-    P(FC(R("fib"), [Read("n")])).evaluate(parent)
+    P(FC(R('fib'), [Read('n')])).evaluate(parent)
 
     print('Должно вывести знак: ', end=' ')
-    P(FC(R("sign"), [Read("n")])).evaluate(parent)
+    P(FC(R('sign'), [Read('n')])).evaluate(parent)
 
     print('Должно вывести 1, если элементы обратные: ', end=' ')
-    P(FC(R("opposite"),
+    P(FC(R('opposite'),
          [Read('x'), Read('y')])).evaluate(parent)
 
     print('Должно вывести среднее арифметическое: ', end=' ')
-    P(FC(R("average"),
+    P(FC(R('average'),
          [Read('x'), Read('y')])).evaluate(parent)
 
     print('Должно вывести максимум из двух чисел: ', end=' ')
-    Read("x").evaluate(parent)
-    Read("y").evaluate(parent)
-    Print(FunctionCall(Reference("max"), [Reference('x'),
+    Read('x').evaluate(parent)
+    Read('y').evaluate(parent)
+    Print(FunctionCall(Reference('max'), [Reference('x'),
                                           Reference('y')])).evaluate(parent)
 
     print('Должно вывести знак среднего арифметического: ', end=' ')
-    Print(FunctionCall(Reference("sign"),
-                       [FunctionCall(Reference("average"),
-                                     [Read("t"),
-                                      Read("p")])])).evaluate(parent)
+    Print(FunctionCall(Reference('sign'),
+                       [FunctionCall(Reference('average'),
+                                     [Read('t'),
+                                      Read('p')])])).evaluate(parent)
 
     print('Должно вывести факториал числа: ', end=' ')
-    Read("x").evaluate(parent)
-    Print(FunctionCall(Reference("factorial"), [
-                       Reference("x")])).evaluate(parent)
+    Read('x').evaluate(parent)
+    Print(FunctionCall(Reference('factorial'), [
+                       Reference('x')])).evaluate(parent)
 
     print('Этот тест проверяет, работает ли if с пустым if_true')
     print('Должно вывести 1,если не делится на 3, иначе ничего не выводит: ',
           end=' ')
-    FC(R("ne_del_na_3"), [Read("x")]).evaluate(parent)
+    FC(R('ne_del_na_3'), [Read('x')]).evaluate(parent)
 
     print('Должно выполнить пустую функцию и не сломаться:) ', end=' ')
     FC(R('nothing'), [N(43)]).evaluate(parent)
