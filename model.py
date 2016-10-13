@@ -39,7 +39,7 @@ class Function:
         self.body = body
 
     def evaluate(self, scope):
-        return obj_result(self.body,scope)
+        return obj_result(self.body, scope)
 
 
 class FunctionDefinition:
