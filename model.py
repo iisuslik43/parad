@@ -97,8 +97,8 @@ class FunctionCall:
     def evaluate(self, scope):
         function = self.fun_expr.evaluate(scope)
         call_scope = Scope(scope)
-        for f_arg, self_arg in zip(function.args, self.args):
-            call_scope[f_arg] = self_arg.evaluate(scope)
+        for arg_name, arg_val_expr in zip(function.args, self.args):
+            call_scope[arg_name] = arg_val_expr.evaluate(scope)
         return function.evaluate(call_scope)
 
 
