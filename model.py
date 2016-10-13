@@ -1,6 +1,6 @@
-def if_result(if_torf, scope):
-    if if_torf:
-        for obj in if_torf:
+def obj_result(operation, scope):
+    if operation:
+        for obj in operation:
             ev_result = obj.evaluate(scope)
         return ev_result
     else:
@@ -39,12 +39,7 @@ class Function:
         self.body = body
 
     def evaluate(self, scope):
-        if self.body:
-            for obj in self.body:
-                ev_result = obj.evaluate(scope)
-            return ev_result
-        else:
-            return None
+        return obj_result(self.body,scope)
 
 
 class FunctionDefinition:
@@ -66,9 +61,9 @@ class Conditional:
 
     def evaluate(self, scope):
         if self.condtion.evaluate(scope).value == 0:
-            return if_result(self.if_false, scope)
+            return obj_result(self.if_false, scope)
         else:
-            return if_result(self.if_true, scope)
+            return obj_result(self.if_true, scope)
 
 
 class Print:
@@ -102,8 +97,8 @@ class FunctionCall:
     def evaluate(self, scope):
         function = self.fun_expr.evaluate(scope)
         call_scope = Scope(scope)
-        for f_obj, self_obj in zip(function.args, self.args):
-            call_scope[f_obj] = self_obj.evaluate(scope)
+        for f_arg, self_arg in zip(function.args, self.args):
+            call_scope[f_arg] = self_arg.evaluate(scope)
         return function.evaluate(call_scope)
 
 
@@ -236,7 +231,8 @@ def my_tests():
          [C(BO(R('a'), '<=', R('b')),
             [R('b')], [FC(R('strange_max'),
                           [R('b'), R('a')])])])).evaluate(parent)
-
+    print('Этот тест не работает, если ввести 6 5 на неисправленной программе:')
+    print('(Выведет 5, а не 6)')
     print('Должно вывести максимум из 2 чисел: ', end=' ')
     P(FC(R("strange_max"), [Read("n"), Read("k")])).evaluate(parent)
     print('Должно вывести число Фибоначчи данного номера: ', end=' ')
@@ -263,7 +259,9 @@ def my_tests():
     Read("x").evaluate(parent)
     Print(FunctionCall(Reference("factorial"), [
                        Reference("x")])).evaluate(parent)
-    print('Должно вывести 1,если не делится на 3, и ничего иначе: ', end=' ')
+    print('Этот тест проверяет, работает ли if с пустым if_true')
+    print('Должно вывести 1,если не делится на 3, иначе ничего не выводит: ',
+          end=' ')
     FC(R("ne_del_na_3"), [Read("x")]).evaluate(parent)
     print('Должно выполнить пустую функцию и не сломаться:) ', end=' ')
     FC(R('nothing'), [N(43)]).evaluate(parent)
