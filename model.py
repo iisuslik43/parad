@@ -1,4 +1,4 @@
-def obj_result(operation, scope):
+def evaluate_list(operation, scope):
     if operation:
         for obj in operation:
             ev_result = obj.evaluate(scope)
@@ -39,7 +39,7 @@ class Function:
         self.body = body
 
     def evaluate(self, scope):
-        return obj_result(self.body, scope)
+        return evaluate_list(self.body, scope)
 
 
 class FunctionDefinition:
@@ -61,9 +61,9 @@ class Conditional:
 
     def evaluate(self, scope):
         if self.condtion.evaluate(scope).value == 0:
-            return obj_result(self.if_false, scope)
+            return evaluate_list(self.if_false, scope)
         else:
-            return obj_result(self.if_true, scope)
+            return evaluate_list(self.if_true, scope)
 
 
 class Print:
@@ -73,7 +73,7 @@ class Print:
 
     def evaluate(self, scope):
         number = self.expr.evaluate(scope)
-        print(int(number.evaluate(scope).value))
+        print(number.evaluate(scope).value)
         return number
 
 
@@ -231,38 +231,48 @@ def my_tests():
          [C(BO(R('a'), '<=', R('b')),
             [R('b')], [FC(R('strange_max'),
                           [R('b'), R('a')])])])).evaluate(parent)
+
     print('Тест выведет бред, если ввести 6 5 на неисправленной программе:')
     print('(Выведет 5, а не 6)')
     print('Должно вывести максимум из 2 чисел: ', end=' ')
     P(FC(R("strange_max"), [Read("n"), Read("k")])).evaluate(parent)
+
     print('Должно вывести число Фибоначчи данного номера: ', end=' ')
     P(FC(R("fib"), [Read("n")])).evaluate(parent)
+
     print('Должно вывести знак: ', end=' ')
     P(FC(R("sign"), [Read("n")])).evaluate(parent)
+
     print('Должно вывести 1, если элементы обратные: ', end=' ')
     P(FC(R("opposite"),
          [Read('x'), Read('y')])).evaluate(parent)
+
     print('Должно вывести среднее арифметическое: ', end=' ')
     P(FC(R("average"),
          [Read('x'), Read('y')])).evaluate(parent)
+
     print('Должно вывести максимум из двух чисел: ', end=' ')
     Read("x").evaluate(parent)
     Read("y").evaluate(parent)
     Print(FunctionCall(Reference("max"), [Reference('x'),
                                           Reference('y')])).evaluate(parent)
+
     print('Должно вывести знак среднего арифметического: ', end=' ')
     Print(FunctionCall(Reference("sign"),
                        [FunctionCall(Reference("average"),
                                      [Read("t"),
                                       Read("p")])])).evaluate(parent)
+
     print('Должно вывести факториал числа: ', end=' ')
     Read("x").evaluate(parent)
     Print(FunctionCall(Reference("factorial"), [
                        Reference("x")])).evaluate(parent)
+
     print('Этот тест проверяет, работает ли if с пустым if_true')
     print('Должно вывести 1,если не делится на 3, иначе ничего не выводит: ',
           end=' ')
     FC(R("ne_del_na_3"), [Read("x")]).evaluate(parent)
+
     print('Должно выполнить пустую функцию и не сломаться:) ', end=' ')
     FC(R('nothing'), [N(43)]).evaluate(parent)
 
