@@ -1,5 +1,6 @@
 from printer import *
 
+
 def evaluate_list(operation, scope):
     if operation:
         for obj in operation:
@@ -36,6 +37,7 @@ class Number:
     def accept(self, visitor):
         visitor.visit_number(self)
 
+
 class Function:
 
     def __init__(self, args, body):
@@ -44,6 +46,7 @@ class Function:
 
     def evaluate(self, scope):
         return evaluate_list(self.body, scope)
+
 
 class FunctionDefinition:
 
@@ -58,6 +61,7 @@ class FunctionDefinition:
     def accept(self, visitor):
         visitor.visit_function_definiction(self)
 
+
 class Conditional:
     def __init__(self, condtion, if_true, if_false=None):
         self.if_true = if_true
@@ -69,9 +73,10 @@ class Conditional:
             return evaluate_list(self.if_false, scope)
         else:
             return evaluate_list(self.if_true, scope)
-    
+
     def accept(self, visitor):
         visitor.visit_condtional(self)
+
 
 class Print:
 
@@ -86,6 +91,7 @@ class Print:
     def accept(self, visitor):
         visitor.visit_print(self)
 
+
 class Read:
 
     def __init__(self, name):
@@ -98,6 +104,7 @@ class Read:
 
     def accept(self, visitor):
         visitor.visit_read(self)
+
 
 class FunctionCall:
 
@@ -115,6 +122,7 @@ class FunctionCall:
     def accept(self, visitor):
         visitor.visit_function_call(self)
 
+
 class Reference:
 
     def __init__(self, name):
@@ -125,6 +133,7 @@ class Reference:
 
     def accept(self, visitor):
         visitor.visit_reference(self)
+
 
 class BinaryOperation:
 
@@ -166,6 +175,8 @@ class BinaryOperation:
 
     def accept(self, visitor):
         visitor.visit_binary_operation(self)
+
+
 class UnaryOperation:
     def __init__(self, op, expr):
         self.op = op
@@ -180,4 +191,3 @@ class UnaryOperation:
 
     def accept(self, visitor):
         visitor.visit_unary_operation(self)
-
