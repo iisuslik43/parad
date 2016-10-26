@@ -1,6 +1,3 @@
-from printer import *
-
-
 def evaluate_list(operation, scope):
     if operation:
         for obj in operation:
@@ -35,7 +32,7 @@ class Number:
         return self
 
     def accept(self, visitor):
-        visitor.visit_number(self)
+        return visitor.visit_number(self)
 
 
 class Function:
@@ -59,7 +56,7 @@ class FunctionDefinition:
         return self.function
 
     def accept(self, visitor):
-        visitor.visit_function_definiction(self)
+        return visitor.visit_function_definition(self)
 
 
 class Conditional:
@@ -75,7 +72,7 @@ class Conditional:
             return evaluate_list(self.if_true, scope)
 
     def accept(self, visitor):
-        visitor.visit_condtional(self)
+        return visitor.visit_condtional(self)
 
 
 class Print:
@@ -89,7 +86,7 @@ class Print:
         return number
 
     def accept(self, visitor):
-        visitor.visit_print(self)
+        return visitor.visit_print(self)
 
 
 class Read:
@@ -103,7 +100,7 @@ class Read:
         return scope[self.name]
 
     def accept(self, visitor):
-        visitor.visit_read(self)
+        return visitor.visit_read(self)
 
 
 class FunctionCall:
@@ -120,7 +117,7 @@ class FunctionCall:
         return function.evaluate(call_scope)
 
     def accept(self, visitor):
-        visitor.visit_function_call(self)
+        return visitor.visit_function_call(self)
 
 
 class Reference:
@@ -132,7 +129,7 @@ class Reference:
         return scope[self.name]
 
     def accept(self, visitor):
-        visitor.visit_reference(self)
+        return visitor.visit_reference(self)
 
 
 class BinaryOperation:
@@ -174,7 +171,7 @@ class BinaryOperation:
             return Number(int(left or right))
 
     def accept(self, visitor):
-        visitor.visit_binary_operation(self)
+        return visitor.visit_binary_operation(self)
 
 
 class UnaryOperation:
@@ -190,4 +187,4 @@ class UnaryOperation:
             return Number(-val)
 
     def accept(self, visitor):
-        visitor.visit_unary_operation(self)
+        return visitor.visit_unary_operation(self)
