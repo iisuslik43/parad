@@ -1,20 +1,37 @@
-from yat.model import *
-from yat.folder import *
+from model import *
+from folder import *
 
 
-kolvo_otctupov = 0
+def print_statements(list_of_st, printer):
+    if list_of_st:
+        printer.indentation += 1
+        for statement in list_of_st:
+            printer.visit(statement)
+        printer.indentation -= 1
 
-def otc():
-    for i in range(kolvo_otctupov):
+def print_args(list_of_args, printer):
+    flag = False
+    for arg in list_of_args:
+        if flag:
+            print(',',end='')
+        printer.visit_arifm(arg)
+        flag = True
+
+def print_indent(printer):
+    for i in range(printer.indentation):
             print('  ',end='')
 
 class PrettyPrinter:
+    def __init__(self, indentation=None):
+        self.indentation = indentation
 
     def visit_arifm(self, tree):
         tree.accept(self)
 
     def visit(self, tree):
-        otc()
+        if not self.indentation:
+            self.indentation = 0
+        print_indent(self)
         tree.accept(self)
         print(';')
 
@@ -22,40 +39,30 @@ class PrettyPrinter:
         print (tree.value, end='')
 
     def visit_condtional(self, tree):
-        global kolvo_otctupov
         print('if(', end='')
         self.visit_arifm(tree.condtion)
         print('){')
-        kolvo_otctupov+=1
-        for statement in tree.if_true:
-            self.visit(statement)
-        kolvo_otctupov-=1
-        otc()
+        print_statements(tree.if_true, self)
+        print_indent(self)
         print('}', 'else', '{')
-        kolvo_otctupov+=1
-        for statement in tree.if_false:
-            self.visit(statement)
-        kolvo_otctupov-=1
+        print_statements(tree.if_false, self)
+        print_indent(self)
         print('}', end='')
 
     def visit_read(self, tree):
-        print('read ', end='')
-        self.visit_arifm(tree.expr)
+        print('read ', tree.name, end='')
 
     def visit_function_definition(self, tree):
-        global kolvo_otctupov
         print('def', tree.name, '(', end='')
         flag = False
         for arg in tree.function.args:
             if flag:
-                print(',',end='')
-            self.visit_arifm(arg)
+                print(',', end='')
+            print(arg, end='')
             flag = True
         print('){')
-        kolvo_otctupov+=1
-        for statement in tree.function.body:
-            self.visit(statement)
-        kolvo_otctupov-=1
+        print_statements(tree.function.body, self)
+        print_indent(self)
         print('}', end='')
 
     def visit_binary_operation(self, tree):
@@ -81,12 +88,7 @@ class PrettyPrinter:
     def visit_function_call(self, tree):
         self.visit_arifm(tree.fun_expr)
         print('(', end='')
-        flag = False
-        for arg in tree.args:
-            if flag:
-                print(',', end='')
-            self.visit_arifm(arg)
-            flag = True
+        print_args(tree.args, self)
         print(')', end='')
 
 
@@ -96,21 +98,11 @@ def tests():
                       [Print(UnaryOperation('-', Number(43))),
                        Print(Number(43))], [Print(Number(43)),
                                             Print(Number(43))])
-    function = Function([Number(1),Number(2),Number(3)], [con])
+    function = Function(['a','b','c'], [con])
     definition = FunctionDefinition('foo', function)
     printer = PrettyPrinter()
     printer.visit(definition)
-    reference = Reference('foo')
-    call = FunctionCall(reference, [Number(1), Number(2), Number(3)])
-    printer = PrettyPrinter()
-    printer.visit(call)
-    printer.visit(Print(Number(43)))
-    cond = Conditional(BinaryOperation(Number(43), '>', Number(42)), [Number(1)],[])
-    printer.visit(cond)
-    
-    ff = ConstantFolder()
-    printer.visit(ff.visit(Number(1)))
-    printer.visit(ff.visit(cond))
-
+    deff = FunctionDefinition('sec', Function(['a'], [definition]))
+    printer.visit(deff)
 if __name__ == "__main__":
     tests()
