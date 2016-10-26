@@ -35,7 +35,7 @@ class PrettyPrinter:
         print(';')
 
     def visit_number(self, tree):
-        print (tree.value, end='')
+        print(tree.value, end='')
 
     def visit_condtional(self, tree):
         print('if(', end='')
@@ -82,7 +82,7 @@ class PrettyPrinter:
     def visit_function_call(self, tree):
         self.visit_arithm(tree.fun_expr)
         print('(', end='')
-        self.print_args(tree.args, self)
+        self.print_args(tree.args)
         print(')', end='')
 
 
