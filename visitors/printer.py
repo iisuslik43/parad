@@ -19,14 +19,14 @@ class PrettyPrinter:
         for arg in list_of_args:
             if flag:
                 print(',', end='')
-            self.visit_arifm(arg)
+            self.visit_arithm(arg)
             flag = True
 
     def print_indent(self):
         for i in range(self.indentation):
             print('  ', end='')
 
-    def visit_arifm(self, tree):
+    def visit_arithm(self, tree):
         tree.accept(self)
 
     def visit(self, tree):
@@ -39,7 +39,7 @@ class PrettyPrinter:
 
     def visit_condtional(self, tree):
         print('if(', end='')
-        self.visit_arifm(tree.condtion)
+        self.visit_arithm(tree.condtion)
         print('){')
         self.print_statements(tree.if_true)
         self.print_indent()
@@ -61,15 +61,15 @@ class PrettyPrinter:
 
     def visit_binary_operation(self, tree):
         print('(', end='')
-        self.visit_arifm(tree.lhs)
+        self.visit_arithm(tree.lhs)
         print(tree.op, end='')
-        self.visit_arifm(tree.rhs)
+        self.visit_arithm(tree.rhs)
         print(')', end='')
 
     def visit_unary_operation(self, tree):
         print('(', end='')
         print(tree.op, end='')
-        self.visit_arifm(tree.expr)
+        self.visit_arithm(tree.expr)
         print(')', end='')
 
     def visit_reference(self, tree):
@@ -77,12 +77,12 @@ class PrettyPrinter:
 
     def visit_print(self, tree):
         print('print ', end='')
-        self.visit_arifm(tree.expr)
+        self.visit_arithm(tree.expr)
 
     def visit_function_call(self, tree):
-        self.visit_arifm(tree.fun_expr)
+        self.visit_arithm(tree.fun_expr)
         print('(', end='')
-        print_args(tree.args, self)
+        self.print_args(tree.args, self)
         print(')', end='')
 
 
